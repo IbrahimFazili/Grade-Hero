@@ -75,9 +75,6 @@
       required(v: any) {
         return !!v || 'Field is required'
       },
-      onRegister() {
-        console.log('taking to register page')
-      }
     },
   }
 </script>

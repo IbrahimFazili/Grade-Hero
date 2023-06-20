@@ -22,12 +22,13 @@
                 v-model="password"
                 :readonly="loading"
                 :rules="[required]"
+                :type="'password'"
                 clearable
                 label="Password"
                 placeholder="Enter your password"
                 ></v-text-field>
 
-                <br />
+                <div v-if="error" class="error">{{ error }}</div>
 
                 <v-btn
                 :disabled="!form"
@@ -43,21 +44,20 @@
             </v-form>
             <div class="text-center">
                 <router-link to="/register">
-                    <v-btn
-                        prepend-icon="mdi-check-circle"
-                        append-icon="mdi-account-circle"
-                        @click="onRegister"
-                        >
-                        <template v-slot:prepend>
-                            <v-icon color="success"></v-icon>
-                        </template>
+                  <v-btn
+                      prepend-icon="mdi-check-circle"
+                      append-icon="mdi-account-circle"
+                      >
+                      <template v-slot:prepend>
+                          <v-icon color="success"></v-icon>
+                      </template>
+ 
+                      Register
 
-                        Register
-
-                        <template v-slot:append>
-                            <v-icon color="warning"></v-icon>
-                        </template>
-                    </v-btn>
+                      <template v-slot:append>
+                          <v-icon color="warning"></v-icon>
+                      </template>
+                  </v-btn>
                 </router-link>
             </div>
             </v-card>
@@ -66,29 +66,49 @@
 </template>
 
 <script lang="ts">
+import axios from 'axios'
   export default {
     data: () => ({
       form: false,
       email: null,
       password: null,
       loading: false,
-      username: null
+      username: '',
+      error: ''
     }),
 
     methods: {
       onSubmit() {
         if (!this.form) return
-
+        const path = "http://localhost:5000/login"
+        const data = {
+          username: this.username,
+          password: this.password
+        }
         this.loading = true
 
-        setTimeout(() => (this.loading = false), 2000)
+        setTimeout(() => (
+            axios.post(path, data)
+            .then(res => {
+              console.log(res.data)
+              sessionStorage.setItem('username', this.username)
+              this.loading = false
+              this.$router.push('/home')
+            }).catch(error => {
+              this.loading = false
+              this.error = 'Invalid username or password'
+              console.log(error)
+            })), 2000)
       },
       required(v: any) {
         return !!v || 'Field is required'
       },
-      onRegister() {
-        console.log('taking to register page')
-      }
     },
   }
 </script>
+
+<style>
+  .error {
+    color: #D50000;
+  }
+</style>

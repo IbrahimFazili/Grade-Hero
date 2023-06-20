@@ -1,6 +1,10 @@
+import json
+
+from bson import ObjectId
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
+from flask_cors import CORS
 
 USERNAME = 'username'
 PASSWORD = 'password'
@@ -9,10 +13,17 @@ URI = "mongodb+srv://fazilibrahim:password@gh1.krlzpmw.mongodb.net/?retryWrites=
 
 # Flask app object
 app = Flask(__name__)
+CORS(app)
 
 # Set up MongoDB connection
 client = MongoClient(URI, server_api=ServerApi('1'))
 database = client['grade-hero']
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super().default(o)
 
 # User routes
 @app.route('/register', methods=['POST'])
@@ -43,6 +54,25 @@ def login_user():
 @app.route('/addcourse', methods=['POST'])
 def add_course():
     pass
+
+@app.route('/getCourse', methods=['GET'])
+def get_course():
+    course_collection = database['courses']
+    username = request.args.get(USERNAME)
+    cursor = course_collection.find({'username': username})
+    modified_documents = []
+
+    for document in cursor:
+        del document['_id']
+        if 'username' in document:
+            del document['username']
+        modified_documents.append(document)
+
+    if modified_documents:
+        json_data = json.dumps(list(modified_documents), cls=JSONEncoder)
+        return json_data, 200
+    else:
+        return jsonify(message='No courses found'), 500
 
 # Health Check Routes
 
