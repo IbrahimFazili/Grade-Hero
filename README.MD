@@ -14,6 +14,11 @@ to run the backend in the virtual console, navigate to the backend folder and ru
 ```
 flask --app main.py --debug run
 ```
+note: by default this runs on 5000 which will cause a 403 on Mac. You will need to add the additional flag
+```
+run --port <number>
+```
+
 
 this will run it in hot reload (no need to close the program and run it again unless new files are added)
 
